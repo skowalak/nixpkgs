@@ -66,12 +66,14 @@ let
       ])
     );
 
-  extensions =
-    callPackages ./extensions-generated.nix { inherit mkAzExtension; }
-    // callPackages ./extensions-manual.nix {
-      inherit mkAzExtension;
-      python3Packages = python3.pkgs;
-    };
+  extensions-generated = lib.mapAttrs (name: ext: mkAzExtension ext) (
+    lib.fromJSON (builtins.readFile ./extensions-generated.json)
+  );
+  extensions-manual = callPackages ./extensions-manual.nix {
+    inherit mkAzExtension;
+    python3Packages = python3.pkgs;
+  };
+  extensions = extensions-generated // extensions-manual;
 
   extensionDir = stdenvNoCC.mkDerivation {
     name = "azure-cli-extensions";
@@ -392,7 +394,10 @@ py.pkgs.toPythonApplication (
         name = "azure-cli-extensions-tool";
         format = "other";
         dontUnpack = true;
-        requires = with python3.pkgs; [ packaging ];
+        requires = with python3.pkgs; [
+          packaging
+          semver
+        ];
         preInstall = ''
           install -Dm755 ${./extensions-tool.py} $out/bin/extensions-tool
         '';
