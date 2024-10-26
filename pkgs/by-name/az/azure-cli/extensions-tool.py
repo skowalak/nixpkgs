@@ -66,7 +66,7 @@ def get_extension_index(cache_dir: Path) -> Set[Ext]:
 
     try:
         index_cache_date, index_data = _get_cached_index(index_file)
-    except KeyError:
+    except FileNotFoundError:
         logger.info("index has not been cached, downloading from source")
         logger.info("creating index cache in %s", index_file)
         _write_index_to_cache(_get_remote_index(), index_file)
@@ -183,8 +183,8 @@ def _diff_sets(
     set_local_by_name.__class__ = ExtByName
     set_remote_by_name.__class__ = ExtByName
     return (
-        set_local - set_remote,
-        set_remote - set_local,
+        set_local_by_name - set_remote_by_name,
+        set_remote_by_name - set_local_by_name,
         set.intersection(set_local, set_remote),
     )
 
