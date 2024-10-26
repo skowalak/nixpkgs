@@ -387,6 +387,21 @@ py.pkgs.toPythonApplication (
         echo "Extension was saved to \"extensions-generated.nix\" file."
         echo "Move it to \"{nixpkgs}/pkgs/by-name/az/azure-cli/extensions-generated.nix\"."
       '';
+
+      extensions-tool = python3.pkgs.buildPythonApplication rec {
+        name = "azure-cli-extensions-tool";
+        format = "other";
+        dontUnpack = true;
+        requires = with python3.pkgs; [ packaging ];
+        preInstall = ''
+          install -Dm755 ${./extensions-tool.py} $out/bin/extensions-tool
+        '';
+        postFixup = ''
+          wrapProgram $out/bin/extensions-tool \
+            --set PYTHONPATH "${python3.pkgs.makePythonPath requires}:$out/${python3.sitePackages}"
+        '';
+        meta.mainProgram = "extensions-tool";
+      };
     };
 
     meta = {
