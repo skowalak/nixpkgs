@@ -16,6 +16,7 @@
   librsvg,
   pango,
   pixman,
+  testers,
 }:
 
 let
@@ -82,6 +83,10 @@ buildGoModule (finalAttrs: {
     versionCheckHook
   ];
   versionCheckProgramArg = "version";
+
+  passthru.tests = {
+    paisa = testers.runNixOSTest ./tests/run.nix;
+  };
 
   preBuild = ''
     cp -r ${finalAttrs.frontend}/web/static ./web
